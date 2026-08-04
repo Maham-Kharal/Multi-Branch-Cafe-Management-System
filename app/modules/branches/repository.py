@@ -26,3 +26,7 @@ class BranchRepository:
         self.db.commit()
         self.db.refresh(branch)
         return branch
+
+    def delete_branch(self, branch: Branch) -> None:
+        self.db.delete(branch)
+        self.db.commit()

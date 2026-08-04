@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.permissions import TokenData, require_authenticated_user, require_branch_staff, require_cafe_owner
+from app.modules.branches.repository import BranchRepository
 from app.modules.menu.branch_menu.repository import BranchMenuRepository
 from app.modules.menu.branch_menu.schemas import BranchMenuItemCreate, BranchMenuItemResponse, BranchMenuItemUpdate
 from app.modules.menu.branch_menu.service import BranchMenuService
@@ -15,7 +16,8 @@ router = APIRouter(prefix="/menu/branch", tags=["Branch Menu & Location Pricing"
 def get_branch_menu_service(db: Session = Depends(get_db)) -> BranchMenuService:
     repo = BranchMenuRepository(db)
     master_repo = MasterMenuRepository(db)
-    return BranchMenuService(repo, master_repo)
+    branch_repo = BranchRepository(db)
+    return BranchMenuService(repo, master_repo, branch_repo)
 
 
 @router.post("", response_model=BranchMenuItemResponse, status_code=201)
@@ -25,9 +27,10 @@ def add_item_to_branch_menu(
     service: BranchMenuService = Depends(get_branch_menu_service),
 ):
     """
-    Café Owner / Manager endpoint to offer a master catalog item or custom item at a specific branch with location-based pricing.
+    Café Owner endpoint to offer a master catalog item or custom item at a specific branch.
+    Validates cross-tenant boundaries to prevent linking master items from another enterprise.
     """
-    return service.add_branch_item(req)
+    return service.add_branch_item(user=current_user, req=req)
 
 
 @router.patch("/{item_id}", response_model=BranchMenuItemResponse)
@@ -40,7 +43,7 @@ def update_branch_menu_item(
     """
     Branch Staff / Owner endpoint to update price override or toggle stock availability (In Stock / Disabled).
     """
-    return service.update_branch_item(item_id, req)
+    return service.update_branch_item(item_id=item_id, user=current_user, req=req)
 
 
 @router.get("/{branch_id}", response_model=List[BranchMenuItemResponse])

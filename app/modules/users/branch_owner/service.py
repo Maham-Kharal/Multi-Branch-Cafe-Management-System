@@ -5,8 +5,9 @@ from app.common.enums import UserRole
 from app.core.security import get_password_hash
 from app.modules.auth.schemas import UserResponse
 from app.modules.users.branch_owner.repository import BranchOwnerUserRepository
-from app.modules.users.branch_owner.schemas import CreateStaffRequest
+from app.modules.users.branch_owner.schemas import CreateStaffRequest, TenantUpdateRequest, UpdateStaffRequest
 from app.modules.users.super_admin.models import User
+from app.modules.users.super_admin.schemas import TenantResponse
 
 
 class BranchOwnerUserService:
@@ -41,3 +42,45 @@ class BranchOwnerUserService:
 
         created = self.repo.create_staff(new_staff)
         return UserResponse.model_validate(created)
+
+    def update_branch_staff(self, tenant_id: str, staff_id: str, req: UpdateStaffRequest) -> UserResponse:
+        staff = self.repo.get_user_by_id(staff_id)
+        if not staff or staff.tenant_id != tenant_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Staff member not found in your café enterprise",
+            )
+
+        if req.full_name is not None:
+            staff.full_name = req.full_name
+        if req.branch_id is not None:
+            staff.branch_id = req.branch_id
+        if req.is_active is not None:
+            staff.is_active = req.is_active
+
+        updated = self.repo.update_user(staff)
+        return UserResponse.model_validate(updated)
+
+    def delete_branch_staff(self, tenant_id: str, staff_id: str) -> None:
+        staff = self.repo.get_user_by_id(staff_id)
+        if not staff or staff.tenant_id != tenant_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Staff member not found in your café enterprise",
+            )
+        self.repo.delete_user(staff)
+
+    def update_tenant_enterprise(self, tenant_id: str, req: TenantUpdateRequest) -> TenantResponse:
+        tenant = self.repo.get_tenant_by_id(tenant_id)
+        if not tenant:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tenant enterprise not found")
+
+        if req.name is not None:
+            tenant.name = req.name
+        if req.description is not None:
+            tenant.description = req.description
+        if req.is_active is not None:
+            tenant.is_active = req.is_active
+
+        updated = self.repo.update_tenant(tenant)
+        return TenantResponse.model_validate(updated)
