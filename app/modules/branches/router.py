@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -46,32 +46,6 @@ def get_branch(
     service: BranchService = Depends(get_branch_service),
 ):
     """
-    Gets single branch details by ID with strict tenant boundary validation.
+    Gets single branch details by ID.
     """
     return service.get_branch_by_id(branch_id=branch_id, user=user)
-
-
-@router.put("/{branch_id}", response_model=BranchResponse)
-def update_branch(
-    branch_id: str,
-    req: BranchUpdateRequest,
-    user: TokenData = Depends(require_cafe_owner),
-    service: BranchService = Depends(get_branch_service),
-):
-    """
-    Café Owner endpoint to update branch details. Validates that the branch belongs to the owner's enterprise.
-    """
-    return service.update_branch(branch_id=branch_id, user=user, req=req)
-
-
-@router.delete("/{branch_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_branch(
-    branch_id: str,
-    user: TokenData = Depends(require_cafe_owner),
-    service: BranchService = Depends(get_branch_service),
-):
-    """
-    Café Owner endpoint to remove a branch. Validates that the branch belongs to the owner's enterprise.
-    """
-    service.delete_branch(branch_id=branch_id, user=user)
-    return None
