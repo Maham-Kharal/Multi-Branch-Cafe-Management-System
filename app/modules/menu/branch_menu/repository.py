@@ -23,3 +23,7 @@ class BranchMenuRepository:
         self.db.commit()
         self.db.refresh(item)
         return item
+
+    def delete(self, item: BranchMenuItem) -> None:
+        self.db.delete(item)
+        self.db.commit()

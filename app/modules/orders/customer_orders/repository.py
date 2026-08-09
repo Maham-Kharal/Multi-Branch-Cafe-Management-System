@@ -16,6 +16,20 @@ class OrderRepository:
     def get_by_customer(self, customer_id: str) -> List[Order]:
         return self.db.query(Order).options(joinedload(Order.items)).filter(Order.customer_id == customer_id).order_by(Order.created_at.desc()).all()
 
+    def get_by_tenant_branches(self, tenant_id: str) -> List[Order]:
+        from app.modules.branches.models import Branch
+        return (
+            self.db.query(Order)
+            .options(joinedload(Order.items))
+            .join(Branch, Order.branch_id == Branch.id)
+            .filter(Branch.tenant_id == tenant_id)
+            .order_by(Order.created_at.desc())
+            .all()
+        )
+
+    def get_all_orders(self) -> List[Order]:
+        return self.db.query(Order).options(joinedload(Order.items)).order_by(Order.created_at.desc()).all()
+
     def create(self, order: Order) -> Order:
         self.db.add(order)
         self.db.commit()

@@ -53,3 +53,16 @@ def get_branch_menu(
     Public / Customer / Staff endpoint to view active menu items and pricing for a specific branch.
     """
     return service.get_branch_menu(branch_id)
+
+
+@router.delete("/{item_id}", status_code=204)
+def delete_branch_menu_item(
+    item_id: str,
+    current_user: TokenData = Depends(require_cafe_owner),
+    service: BranchMenuService = Depends(get_branch_menu_service),
+):
+    """
+    Café Owner endpoint to remove an item from a branch menu.
+    """
+    service.delete_branch_item(item_id)
+    return None

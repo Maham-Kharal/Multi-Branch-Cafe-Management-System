@@ -5,8 +5,8 @@ from pydantic import BaseModel, Field
 class BranchMenuItemCreate(BaseModel):
     branch_id: str
     master_menu_item_id: Optional[str] = Field(None, description="Optional parent master catalog item to copy/inherit from")
-    name: str
-    category: str
+    name: Optional[str] = None
+    category: Optional[str] = None
     price_override: Optional[float] = Field(None, description="Location and demand specific custom price override")
     is_available: bool = True
 

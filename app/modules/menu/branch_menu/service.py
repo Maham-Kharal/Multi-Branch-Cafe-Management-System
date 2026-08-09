@@ -44,3 +44,9 @@ class BranchMenuService:
     def get_branch_menu(self, branch_id: str) -> List[BranchMenuItemResponse]:
         items = self.repo.get_by_branch(branch_id)
         return [BranchMenuItemResponse.model_validate(i) for i in items]
+
+    def delete_branch_item(self, item_id: str) -> None:
+        item = self.repo.get_by_id(item_id)
+        if not item:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Branch menu item not found")
+        self.repo.delete(item)

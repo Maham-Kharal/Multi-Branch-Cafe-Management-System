@@ -30,7 +30,7 @@ class BranchService:
         return BranchResponse.model_validate(created)
 
     def get_branches(self, user: TokenData) -> List[BranchResponse]:
-        if user.role == UserRole.SUPER_ADMIN:
+        if user.role == UserRole.SUPER_ADMIN or user.role == UserRole.CUSTOMER or not user.tenant_id:
             branches = self.repo.get_all_branches()
         else:
             branches = self.repo.get_branches_by_tenant(user.tenant_id)
@@ -51,3 +51,33 @@ class BranchService:
             )
 
         return BranchResponse.model_validate(branch)
+
+    def update_branch(self, branch_id: str, user: TokenData, req: BranchUpdateRequest) -> BranchResponse:
+        branch = self.repo.get_branch_by_id(branch_id)
+        if not branch:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Branch not found")
+        if user.role != UserRole.SUPER_ADMIN and branch.tenant_id != user.tenant_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied to update this branch")
+
+        if req.name is not None:
+            branch.name = req.name
+        if req.address is not None:
+            branch.address = req.address
+        if req.city is not None:
+            branch.city = req.city
+        if req.phone is not None:
+            branch.phone = req.phone
+        if req.is_active is not None:
+            branch.is_active = req.is_active
+
+        updated = self.repo.update_branch(branch)
+        return BranchResponse.model_validate(updated)
+
+    def delete_branch(self, branch_id: str, user: TokenData) -> None:
+        branch = self.repo.get_branch_by_id(branch_id)
+        if not branch:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Branch not found")
+        if user.role != UserRole.SUPER_ADMIN and branch.tenant_id != user.tenant_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied to delete this branch")
+
+        self.repo.delete_branch(branch)

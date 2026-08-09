@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brewly Café — Multi-Branch Management Platform</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Auth Layout Container -->
+  <div id="authContainer" style="display: flex; min-height: 100vh; align-items: center; justify-content: center; padding: 16px;">
+    <div style="background: #FFFFFF; width: 100%; max-width: 420px; padding: 32px; border-radius: 24px; border: 1px solid #F0E6D8; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+      
+      <div style="text-align: center; margin-bottom: 24px;">
+        <div style="width: 48px; h: 48px; background: #F4B400; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px;">☕</div>
+        <h1 style="font-size: 24px; font-weight: 800; color: #1C1917;">Brewly Café</h1>
+        <p style="font-size: 12px; color: #78716C; margin-top: 4px;">Multi-Branch Enterprise Management System</p>
+      </div>
+
+      <!-- Login View -->
+      <div id="loginView">
+        <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">Sign In</h2>
+        <div id="loginError" style="display:none; padding: 10px; background: #FFE4E6; color: #9F1239; font-size: 12px; border-radius: 8px; margin-bottom: 12px;"></div>
+        
+        <form id="loginForm">
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="loginEmail" class="form-input" placeholder="owner@cafe.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Sign In to Dashboard</button>
+        </form>
+
+        <div style="text-align: center; margin-top: 16px; font-size: 12px; color: #78716C;">
+          Don't have an account? <a href="#" id="toRegister" style="color: #B45309; font-weight: 700; text-decoration: none;">Register Enterprise</a>
+        </div>
+      </div>
+
+      <!-- Register View -->
+      <div id="registerView" style="display: none;">
+        <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">Create Enterprise Account</h2>
+        <div id="registerError" style="display:none; padding: 10px; background: #FFE4E6; color: #9F1239; font-size: 12px; border-radius: 8px; margin-bottom: 12px;"></div>
+        
+        <form id="registerForm">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" id="regFullName" class="form-input" placeholder="John Doe" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="regEmail" class="form-input" placeholder="owner@cafe.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="regPassword" class="form-input" placeholder="••••••••" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Account Role</label>
+            <select id="regRole" class="form-select">
+              <option value="CAFE_OWNER">Café Owner (Enterprise Tenant)</option>
+              <option value="CUSTOMER">Customer Account</option>
+              <option value="SUPER_ADMIN">Super Admin</option>
+            </select>
+          </div>
+          <div class="form-group" id="tenantNameGroup">
+            <label class="form-label" style="color: #92400E;">Café Enterprise Name</label>
+            <input type="text" id="regTenantName" class="form-input" style="background: #FEF3C7; border-color: #FDE68A;" placeholder="e.g. Brewly Franchise Group">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Register Account</button>
+        </form>
+
+        <div style="text-align: center; margin-top: 16px; font-size: 12px; color: #78716C;">
+          Already registered? <a href="#" id="toLogin" style="color: #B45309; font-weight: 700; text-decoration: none;">Sign In Here</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Dashboard App Layout -->
+  <div id="appLayout" class="app-container" style="display: none;">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div>
+        <div class="brand-header">
+          <div class="brand-icon">☕</div>
+          <div>
+            <div class="brand-title">Brewly Café</div>
+            <span class="brand-badge">Multi-Branch</span>
+          </div>
+        </div>
+
+        <nav class="nav-menu" id="sideNavMenu">
+          <!-- Dynamic Role Nav Items Rendered by JS -->
+        </nav>
+      </div>
+
+      <div style="font-size: 11px; color: #78716C; padding: 12px; background: #FAFAFA; border-radius: 12px; border: 1px solid #F5F5F4;">
+        <div style="font-weight: 700; color: #1C1917;" id="sideTenantName">Enterprise Active</div>
+        <div id="sideUserEmail" style="overflow: hidden; text-overflow: ellipsis;">user@cafe.com</div>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <!-- Navbar -->
+      <header class="top-navbar">
+        <div class="user-profile-bar">
+          <div class="user-info">
+            <div class="user-name" id="navUserName">User Name</div>
+            <div class="user-role-tag" id="navUserRole">CAFE_OWNER</div>
+          </div>
+          <button id="logoutBtn" class="btn btn-outline btn-sm" style="color: #9F1239;">Logout</button>
+        </div>
+      </header>
+
+      <!-- Content Panels -->
+      <main class="content-body">
+        
+        <!-- View 1: Owner Dashboard -->
+        <section id="viewOwnerDashboard" class="view-panel">
+          <div class="cafe-card" style="margin-bottom: 24px;">
+            <span class="badge badge-amber">Café Enterprise Admin</span>
+            <h1 style="font-size: 24px; font-weight: 800; margin-top: 8px;">Enterprise Performance Dashboard</h1>
+            <p style="font-size: 13px; color: #78716C; margin-top: 4px;">Manage physical café branches, master menu catalog, and location pricing.</p>
+          </div>
+
+          <!-- Dynamic Real Metrics -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div class="cafe-card" style="display: flex; align-items: center; gap: 16px;">
+              <div style="font-size: 28px;">🏬</div>
+              <div>
+                <div style="font-size: 11px; font-weight: 800; color: #78716C; text-transform: uppercase;">Owned Branches</div>
+                <div style="font-size: 24px; font-weight: 800;" id="dashBranchCount">0</div>
+              </div>
+            </div>
+
+            <div class="cafe-card" style="display: flex; align-items: center; gap: 16px;">
+              <div style="font-size: 28px;">🛍️</div>
+              <div>
+                <div style="font-size: 11px; font-weight: 800; color: #78716C; text-transform: uppercase;">Orders Today</div>
+                <div style="font-size: 24px; font-weight: 800;" id="dashOrderCount">0</div>
+              </div>
+            </div>
+
+            <div class="cafe-card" style="display: flex; align-items: center; gap: 16px;">
+              <div style="font-size: 28px;">📖</div>
+              <div>
+                <div style="font-size: 11px; font-weight: 800; color: #78716C; text-transform: uppercase;">Master Menu Items</div>
+                <div style="font-size: 24px; font-weight: 800;" id="dashMasterCount">0</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cafe-card">
+            <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 16px;">Physical Café Locations</h3>
+            <div id="dashBranchGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- View 2: Branches Management -->
+        <section id="viewBranches" class="view-panel">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+            <div>
+              <h1 style="font-size: 24px; font-weight: 800;">Physical Branch Management</h1>
+              <p style="font-size: 13px; color: #78716C;">Create, edit, or remove physical branch locations for your enterprise network.</p>
+            </div>
+            <button class="btn btn-primary" id="openAddBranchModalBtn">+ Add New Branch</button>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 24px;">
+            <input type="text" id="branchSearchInput" class="form-input" placeholder="Search branches by name, city, or address...">
+          </div>
+
+          <div id="branchesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+            <!-- Rendered by JS -->
+          </div>
+        </section>
+
+        <!-- View 3: Master Menu Catalog -->
+        <section id="viewMasterMenu" class="view-panel">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+            <div>
+              <h1 style="font-size: 24px; font-weight: 800;">Master Menu Catalog</h1>
+              <p style="font-size: 13px; color: #78716C;">Define global catalog items inherited by all physical branches.</p>
+            </div>
+            <button class="btn btn-primary" id="openAddMasterItemModalBtn">+ Add Master Item</button>
+          </div>
+
+          <!-- Dynamic Categories Bar with + Add Category button -->
+          <div class="category-bar" id="masterCategoryBar">
+            <!-- Category Pills rendered by JS -->
+          </div>
+
+          <div id="masterMenuGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+            <!-- Rendered by JS -->
+          </div>
+        </section>
+
+        <!-- View 4: Branch Menu & Pricing -->
+        <section id="viewBranchMenu" class="view-panel">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+            <div>
+              <h1 style="font-size: 24px; font-weight: 800;">Location-Based Branch Pricing</h1>
+              <p style="font-size: 13px; color: #78716C;">Assign items to specific branches and configure custom location price overrides.</p>
+            </div>
+            <button class="btn btn-primary" id="openAddBranchItemModalBtn">+ Add Item to Branch</button>
+          </div>
+
+          <div class="cafe-card" style="margin-bottom: 24px;">
+            <label class="form-label">Select Physical Branch</label>
+            <div id="branchSelectorBar" style="display: flex; gap: 8px; overflow-x: auto;">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+
+          <div class="cafe-card">
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Item Name</th>
+                    <th>Category</th>
+                    <th>Effective Price</th>
+                    <th>Price Override</th>
+                    <th>Stock Status</th>
+                    <th style="text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="branchMenuTableBody">
+                  <!-- Rendered by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- View 5: Enterprise Orders -->
+        <section id="viewOrders" class="view-panel">
+          <div style="margin-bottom: 24px;">
+            <h1 style="font-size: 24px; font-weight: 800;">Enterprise Orders Monitor</h1>
+            <p style="font-size: 13px; color: #78716C;">Real-time order receipts across all café branches.</p>
+          </div>
+
+          <div class="category-bar" id="orderStatusFilterBar">
+            <button class="category-pill active" data-status="ALL">ALL</button>
+            <button class="category-pill" data-status="PENDING">PENDING</button>
+            <button class="category-pill" data-status="IN_PREPARATION">IN_PREPARATION</button>
+            <button class="category-pill" data-status="COMPLETED">COMPLETED</button>
+            <button class="category-pill" data-status="CANCELLED">CANCELLED</button>
+          </div>
+
+          <div class="cafe-card">
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Type</th>
+                    <th>Total Amount</th>
+                    <th>Status</th>
+                    <th>Created Date</th>
+                  </tr>
+                </thead>
+                <tbody id="ordersTableBody">
+                  <!-- Rendered by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- View 6: Staff Kitchen Board -->
+        <section id="viewStaff" class="view-panel">
+          <div style="margin-bottom: 24px;">
+            <h1 style="font-size: 24px; font-weight: 800;">Branch Kitchen & POS Terminal</h1>
+            <p style="font-size: 13px; color: #78716C;">Live order preparation queue for assigned branch staff.</p>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+            <div class="cafe-card">
+              <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 12px; color: #B45309;">Pending Orders</h3>
+              <div id="staffPendingCol" style="display: flex; flex-direction: column; gap: 12px;"></div>
+            </div>
+
+            <div class="cafe-card">
+              <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 12px; color: #0369A1;">In Kitchen Preparation</h3>
+              <div id="staffPrepCol" style="display: flex; flex-direction: column; gap: 12px;"></div>
+            </div>
+
+            <div class="cafe-card">
+              <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 12px; color: #047857;">Completed Orders</h3>
+              <div id="staffCompletedCol" style="display: flex; flex-direction: column; gap: 12px;"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- View 7: Customer Checkout -->
+        <section id="viewCustomer" class="view-panel">
+          <div style="margin-bottom: 24px;">
+            <h1 style="font-size: 24px; font-weight: 800;">Café Online Ordering</h1>
+            <p style="font-size: 13px; color: #78716C;">Select items from your local branch menu and place orders online.</p>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+            <div id="customerMenuGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px;">
+              <!-- Rendered by JS -->
+            </div>
+
+            <div class="cafe-card">
+              <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 16px;">Your Cart</h3>
+              <div id="customerCartItems" style="margin-bottom: 16px;">Cart is empty.</div>
+              <div style="font-size: 18px; font-weight: 800; text-align: right; margin-bottom: 16px;" id="cartTotalText">$0.00</div>
+              <button class="btn btn-primary" id="confirmCustomerOrderBtn" style="width: 100%;">Confirm & Place Order</button>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Modals -->
+
+  <!-- Add Branch Modal -->
+  <div id="addBranchModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Create New Physical Branch</h3>
+        <button class="close-modal-btn" style="border:none; background:none; font-size: 18px; cursor:pointer;">✕</button>
+      </div>
+      <form id="addBranchForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Branch Name</label>
+            <input type="text" id="branchName" class="form-input" placeholder="e.g. Downtown Mall Branch" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">City</label>
+            <input type="text" id="branchCity" class="form-input" placeholder="e.g. Lahore" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Address</label>
+            <input type="text" id="branchAddress" class="form-input" placeholder="e.g. Commercial Area Block C" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="text" id="branchPhone" class="form-input" placeholder="e.g. 03001234567">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline close-modal-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Branch</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Branch Modal -->
+  <div id="editBranchModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Edit Physical Branch</h3>
+        <button class="close-modal-btn" style="border:none; background:none; font-size: 18px; cursor:pointer;">✕</button>
+      </div>
+      <form id="editBranchForm">
+        <input type="hidden" id="editBranchId">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Branch Name</label>
+            <input type="text" id="editBranchName" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">City</label>
+            <input type="text" id="editBranchCity" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Address</label>
+            <input type="text" id="editBranchAddress" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="text" id="editBranchPhone" class="form-input">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline close-modal-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Master Item Modal -->
+  <div id="addMasterItemModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Add Master Catalog Item</h3>
+        <button class="close-modal-btn" style="border:none; background:none; font-size: 18px; cursor:pointer;">✕</button>
+      </div>
+      <form id="addMasterItemForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Item Name</label>
+            <input type="text" id="masterName" class="form-input" placeholder="e.g. Caramel Macchiato" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="masterCategorySelect" class="form-select"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Base Price ($)</label>
+            <input type="number" step="0.01" id="masterBasePrice" class="form-input" placeholder="4.50" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea id="masterDescription" class="form-textarea" rows="3" placeholder="Freshly brewed espresso with caramel drizzle..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline close-modal-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Catalog Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Master Item Modal -->
+  <div id="editMasterItemModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Edit Master Catalog Item</h3>
+        <button class="close-modal-btn" style="border:none; background:none; font-size: 18px; cursor:pointer;">✕</button>
+      </div>
+      <form id="editMasterItemForm">
+        <input type="hidden" id="editMasterItemId">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Item Name</label>
+            <input type="text" id="editMasterName" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="editMasterCategorySelect" class="form-select"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Base Price ($)</label>
+            <input type="number" step="0.01" id="editMasterBasePrice" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea id="editMasterDescription" class="form-textarea" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline close-modal-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Category Modal -->
+  <div id="addCategoryModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Add Custom Category</h3>
+        <button class="close-modal-btn" style="border:none; background:none; font-size: 18px; cursor:pointer;">✕</button>
+      </div>
+      <form id="addCategoryForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Category Name</label>
+            <input type="text" id="newCategoryInput" class="form-input" placeholder="e.g. Smoothies & Shakes" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline close-modal-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Category</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Branch Item Modal -->
+  <div id="addBranchItemModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Add Menu Item to Branch</h3>
+        <button class="close-modal-btn" style="border:none; background:none; font-size: 18px; cursor:pointer;">✕</button>
+      </div>
+      <form id="addBranchItemForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Select Master Catalog Item</label>
+            <select id="branchItemMasterSelect" class="form-select" required></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="color: #92400E;">Price Override ($) (Optional)</label>
+            <input type="number" step="0.01" id="branchItemPriceOverride" class="form-input" style="background: #FEF3C7; border-color: #FDE68A;" placeholder="e.g. 5.25 (Leave empty to inherit base price)">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline close-modal-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Assign to Branch</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -49,3 +49,29 @@ def get_branch(
     Gets single branch details by ID.
     """
     return service.get_branch_by_id(branch_id=branch_id, user=user)
+
+
+@router.put("/{branch_id}", response_model=BranchResponse)
+def update_branch(
+    branch_id: str,
+    req: BranchUpdateRequest,
+    user: TokenData = Depends(require_cafe_owner),
+    service: BranchService = Depends(get_branch_service),
+):
+    """
+    Café Owner endpoint to update physical branch details (name, city, address, phone, is_active).
+    """
+    return service.update_branch(branch_id=branch_id, user=user, req=req)
+
+
+@router.delete("/{branch_id}", status_code=204)
+def delete_branch(
+    branch_id: str,
+    user: TokenData = Depends(require_cafe_owner),
+    service: BranchService = Depends(get_branch_service),
+):
+    """
+    Café Owner endpoint to remove a physical branch.
+    """
+    service.delete_branch(branch_id=branch_id, user=user)
+    return None

@@ -28,13 +28,43 @@ def create_master_menu_item(
     return service.create_item(user=current_owner, req=req)
 
 
-@router.get("/tenant/{tenant_id}", response_model=List[MasterMenuItemResponse])
-def get_master_menu(
-    tenant_id: str,
+@router.get("", response_model=List[MasterMenuItemResponse])
+def get_my_master_menu(
     user: TokenData = Depends(require_authenticated_user),
     service: MasterMenuService = Depends(get_master_menu_service),
 ):
     """
-    Lists master menu catalog items for a given tenant enterprise.
+    Lists master menu catalog items for the current authenticated user's tenant enterprise.
     """
-    return service.get_items_by_tenant(tenant_id)
+    if not user.tenant_id:
+        return []
+    return service.get_items_by_tenant(user.tenant_id)
+
+
+from app.modules.menu.master_menu.schemas import MasterMenuItemCreate, MasterMenuItemResponse, MasterMenuItemUpdate
+
+
+@router.put("/{item_id}", response_model=MasterMenuItemResponse)
+def update_master_menu_item(
+    item_id: str,
+    req: MasterMenuItemUpdate,
+    current_owner: TokenData = Depends(require_cafe_owner),
+    service: MasterMenuService = Depends(get_master_menu_service),
+):
+    """
+    Café Owner endpoint to edit master catalog item details (name, category, price, is_active).
+    """
+    return service.update_item(item_id=item_id, user=current_owner, req=req)
+
+
+@router.delete("/{item_id}", status_code=204)
+def delete_master_menu_item(
+    item_id: str,
+    current_owner: TokenData = Depends(require_cafe_owner),
+    service: MasterMenuService = Depends(get_master_menu_service),
+):
+    """
+    Café Owner endpoint to remove an item from master menu catalog.
+    """
+    service.delete_item(item_id=item_id, user=current_owner)
+    return None

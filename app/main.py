@@ -62,8 +62,24 @@ app.include_router(payments_router, prefix=api_prefix)
 app.include_router(reports_router, prefix=api_prefix)
 
 
-@app.get("/", tags=["Health Check"])
-def root_health_check():
+from fastapi.responses import FileResponse
+import os
+
+
+@app.get("/styles.css", include_in_schema=False)
+def serve_styles():
+    return FileResponse("styles.css", media_type="text/css")
+
+
+@app.get("/app.js", include_in_schema=False)
+def serve_js():
+    return FileResponse("app.js", media_type="application/javascript")
+
+
+@app.get("/", tags=["Frontend Web App"])
+def serve_frontend():
+    if os.path.exists("index.html"):
+        return FileResponse("index.html")
     return {
         "status": "online",
         "system": settings.PROJECT_NAME,

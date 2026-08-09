@@ -31,12 +31,17 @@ def place_inhouse_pos_order(
     return service.create_inhouse_order(staff=current_staff, req=req)
 
 
+from typing import List, Optional
+from app.core.permissions import TokenData, require_authenticated_user, require_branch_staff
+
+
 @router.get("/live", response_model=List[OrderResponse])
 def get_live_branch_orders(
-    current_staff: TokenData = Depends(require_branch_staff),
+    branch_id: Optional[str] = None,
+    current_user: TokenData = Depends(require_authenticated_user),
     service: InHouseOrderService = Depends(get_inhouse_order_service),
 ):
     """
-    Branch Staff / Manager endpoint to monitor live orders for their assigned physical branch.
+    Branch Staff / Café Owner / Super Admin endpoint to monitor live orders for physical branches.
     """
-    return service.get_live_branch_orders(branch_id=current_staff.branch_id)
+    return service.get_live_branch_orders(user=current_user, branch_id=branch_id)

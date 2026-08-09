@@ -69,6 +69,16 @@ class InHouseOrderService:
         created = self.repo.create(order)
         return OrderResponse.model_validate(created)
 
-    def get_live_branch_orders(self, branch_id: str) -> List[OrderResponse]:
-        orders = self.repo.get_by_branch(branch_id)
+    def get_live_branch_orders(self, user: TokenData, branch_id: Optional[str] = None) -> List[OrderResponse]:
+        from app.common.enums import UserRole
+        if branch_id:
+            orders = self.repo.get_by_branch(branch_id)
+        elif user.role == UserRole.SUPER_ADMIN:
+            orders = self.repo.get_all_orders()
+        elif user.tenant_id:
+            orders = self.repo.get_by_tenant_branches(user.tenant_id)
+        elif user.branch_id:
+            orders = self.repo.get_by_branch(user.branch_id)
+        else:
+            orders = self.repo.get_all_orders()
         return [OrderResponse.model_validate(o) for o in orders]
