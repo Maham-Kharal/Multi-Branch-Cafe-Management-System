@@ -5,12 +5,13 @@ import { Modal } from '../../components/common/Modal';
 import { Button } from '../../components/common/Button';
 import { orderService } from '../../services/orderService';
 import { Order, OrderStatus } from '../../types/order';
-import { ShoppingBag, Eye, Search, CreditCard, DollarSign } from 'lucide-react';
+import { ShoppingBag, Eye, Search, Calendar, CheckCircle, Truck } from 'lucide-react';
 
 export const OwnerOrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [monthFilter, setMonthFilter] = useState<string>('ALL_TIME');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Receipt Modal State
@@ -52,6 +53,8 @@ export const OwnerOrdersPage: React.FC = () => {
         return <Badge variant="blue">Preparing</Badge>;
       case 'COMPLETED':
         return <Badge variant="emerald">Completed</Badge>;
+      case 'DELIVERED':
+        return <Badge variant="emerald">Delivered 🚚</Badge>;
       case 'CANCELLED':
         return <Badge variant="rose">Cancelled</Badge>;
     }
@@ -60,7 +63,22 @@ export const OwnerOrdersPage: React.FC = () => {
   const filteredOrders = orders.filter((o) => {
     const matchesStatus = statusFilter === 'ALL' || o.status === statusFilter;
     const matchesSearch = o.id.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesStatus && matchesSearch;
+
+    let matchesMonth = true;
+    if (o.created_at) {
+      const oDate = new Date(o.created_at);
+      const now = new Date();
+      if (monthFilter === 'THIS_MONTH') {
+        matchesMonth = oDate.getMonth() === now.getMonth() && oDate.getFullYear() === now.getFullYear();
+      } else if (monthFilter === 'LAST_MONTH') {
+        const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        matchesMonth = oDate.getMonth() === lastMonthDate.getMonth() && oDate.getFullYear() === lastMonthDate.getFullYear();
+      } else if (monthFilter === 'TODAY') {
+        matchesMonth = oDate.toDateString() === now.toDateString();
+      }
+    }
+
+    return matchesStatus && matchesSearch && matchesMonth;
   });
 
   return (
@@ -68,12 +86,12 @@ export const OwnerOrdersPage: React.FC = () => {
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-stone-200/80 shadow-xs">
         <div>
-          <h1 className="text-2xl font-extrabold text-stone-900 tracking-tight">Enterprise Orders & Payments</h1>
-          <p className="text-xs text-stone-500 mt-1">Real-time order tracking and financial transactions across all branches.</p>
+          <h1 className="text-2xl font-extrabold text-stone-900 tracking-tight">Enterprise Orders & History</h1>
+          <p className="text-xs text-stone-500 mt-1">Permanent order archives, past monthly transactions, and live status updates.</p>
         </div>
 
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-          {['ALL', 'PENDING', 'IN_PREPARATION', 'COMPLETED', 'CANCELLED'].map((st) => (
+          {['ALL', 'PENDING', 'IN_PREPARATION', 'COMPLETED', 'DELIVERED', 'CANCELLED'].map((st) => (
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
@@ -89,20 +107,36 @@ export const OwnerOrdersPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter & Search Bar */}
-      <div className="flex items-center gap-3 bg-white p-4 rounded-2xl border border-stone-200/80">
-        <Search className="w-4 h-4 text-stone-400" />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Filter orders by Order ID..."
-          className="bg-transparent text-sm w-full focus:outline-none text-stone-800 placeholder-stone-400"
-        />
+      {/* Filter & Search Bar with Month Filter */}
+      <div className="flex flex-col md:flex-row md:items-center gap-3 bg-white p-4 rounded-2xl border border-stone-200/80">
+        <div className="flex items-center gap-2 bg-stone-50 px-3 py-2 rounded-xl border border-stone-200">
+          <Calendar className="w-4 h-4 text-amber-700" />
+          <select
+            value={monthFilter}
+            onChange={(e) => setMonthFilter(e.target.value)}
+            className="bg-transparent text-xs font-bold text-stone-800 focus:outline-none"
+          >
+            <option value="ALL_TIME">All Time History</option>
+            <option value="TODAY">Today's Orders</option>
+            <option value="THIS_MONTH">This Month</option>
+            <option value="LAST_MONTH">Last Month</option>
+          </select>
+        </div>
+
+        <div className="flex items-center gap-2 bg-stone-50 px-3 py-2 rounded-xl border border-stone-200 flex-1">
+          <Search className="w-4 h-4 text-stone-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search order history by Order ID..."
+            className="bg-transparent text-xs font-medium w-full focus:outline-none text-stone-800 placeholder-stone-400"
+          />
+        </div>
       </div>
 
       {/* Orders Table */}
-      <Card title="Live Order Receipts & Transactions">
+      <Card title="Permanent Order Receipts & Financial Archives">
         {isLoading ? (
           <div className="py-12 text-center text-xs text-stone-400">Loading order receipts...</div>
         ) : (
@@ -111,10 +145,10 @@ export const OwnerOrdersPage: React.FC = () => {
               <thead>
                 <tr className="border-b border-stone-200 text-stone-400 uppercase tracking-wider bg-stone-50/50">
                   <th className="py-3 px-4 font-bold">Order ID</th>
-                  <th className="py-3 px-4 font-bold">Type</th>
+                  <th className="py-3 px-4 font-bold">Fulfillment / Type</th>
                   <th className="py-3 px-4 font-bold">Items Count</th>
                   <th className="py-3 px-4 font-bold">Total Amount</th>
-                  <th className="py-3 px-4 font-bold">Status</th>
+                  <th className="py-3 px-4 font-bold">Kitchen Status</th>
                   <th className="py-3 px-4 font-bold">Date & Time</th>
                   <th className="py-3 px-4 font-bold text-right">Actions</th>
                 </tr>
@@ -124,9 +158,16 @@ export const OwnerOrdersPage: React.FC = () => {
                   <tr key={o.id} className="hover:bg-amber-50/30 transition-colors">
                     <td className="py-3.5 px-4 font-bold text-stone-900 font-mono">#{o.id.substring(0, 8)}</td>
                     <td className="py-3.5 px-4">
-                      <Badge variant={o.order_type === 'CUSTOMER_ONLINE' ? 'blue' : 'gold'}>
-                        {o.order_type === 'CUSTOMER_ONLINE' ? 'Online Order' : 'In-House POS'}
-                      </Badge>
+                      <div className="flex flex-col">
+                        <Badge variant={o.order_type === 'CUSTOMER_ONLINE' ? 'blue' : 'gold'}>
+                          {o.order_type === 'CUSTOMER_ONLINE' ? 'Online Order' : 'In-House POS'}
+                        </Badge>
+                        {o.delivery_address && o.delivery_address !== 'Dine-In / Pickup' && (
+                          <span className="text-[10px] text-amber-800 mt-0.5 truncate max-w-[140px]">
+                            🛵 {o.delivery_address}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-3.5 px-4 font-semibold text-stone-800">
                       {o.items ? `${o.items.length} item(s)` : '1 item'}
@@ -153,7 +194,7 @@ export const OwnerOrdersPage: React.FC = () => {
                 {filteredOrders.length === 0 && (
                   <tr>
                     <td colSpan={7} className="py-10 text-center text-stone-400">
-                      No orders match the selected filter.
+                      No order receipts found matching selected criteria.
                     </td>
                   </tr>
                 )}
@@ -164,7 +205,7 @@ export const OwnerOrdersPage: React.FC = () => {
       </Card>
 
       {/* Detailed Order Receipt Modal */}
-      <Modal isOpen={!!selectedOrder} onClose={() => setSelectedOrder(null)} title="Order Receipt & Payment Details">
+      <Modal isOpen={!!selectedOrder} onClose={() => setSelectedOrder(null)} title="Order Receipt & Status Controls">
         {selectedOrder && (
           <div className="space-y-4">
             <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200 space-y-2.5 text-xs">
@@ -173,10 +214,10 @@ export const OwnerOrdersPage: React.FC = () => {
                 <span className="font-mono font-bold text-stone-900">#{selectedOrder.id}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-stone-500">Order Type:</span>
-                <Badge variant={selectedOrder.order_type === 'CUSTOMER_ONLINE' ? 'blue' : 'gold'}>
-                  {selectedOrder.order_type}
-                </Badge>
+                <span className="text-stone-500">Fulfillment:</span>
+                <span className="font-semibold text-stone-800">
+                  {selectedOrder.delivery_address || 'Dine-In / Pickup'}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-stone-500">Current Status:</span>
@@ -202,7 +243,7 @@ export const OwnerOrdersPage: React.FC = () => {
             </div>
 
             {/* Status Change Controls */}
-            {selectedOrder.status !== 'COMPLETED' && selectedOrder.status !== 'CANCELLED' && (
+            {selectedOrder.status !== 'COMPLETED' && selectedOrder.status !== 'DELIVERED' && selectedOrder.status !== 'CANCELLED' && (
               <div className="pt-2 flex items-center justify-end gap-2 border-t border-stone-100">
                 {selectedOrder.status === 'PENDING' && (
                   <Button

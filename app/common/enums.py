@@ -12,6 +12,7 @@ class OrderStatus(str, enum.Enum):
     PENDING = "PENDING"
     IN_PREPARATION = "IN_PREPARATION"
     COMPLETED = "COMPLETED"
+    DELIVERED = "DELIVERED"
     CANCELLED = "CANCELLED"
 
 

@@ -31,6 +31,12 @@ class AuthService:
             tenant = self.repo.create_tenant(name=req.tenant_name)
             tenant_id = tenant.id
 
+        if req.role == UserRole.BRANCH_STAFF and req.branch_id and not tenant_id:
+            from app.modules.branches.repository import BranchRepository
+            branch = BranchRepository(self.repo.db).get_branch_by_id(req.branch_id)
+            if branch:
+                tenant_id = branch.tenant_id
+
         hashed_password = get_password_hash(req.password)
         new_user = User(
             email=req.email,

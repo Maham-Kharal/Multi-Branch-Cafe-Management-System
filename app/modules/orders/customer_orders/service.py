@@ -11,9 +11,10 @@ from app.modules.orders.customer_orders.schemas import CreateOrderRequest, Order
 
 class OrderService:
     VALID_TRANSITIONS = {
-        OrderStatus.PENDING: [OrderStatus.IN_PREPARATION, OrderStatus.CANCELLED],
-        OrderStatus.IN_PREPARATION: [OrderStatus.COMPLETED, OrderStatus.CANCELLED],
-        OrderStatus.COMPLETED: [],
+        OrderStatus.PENDING: [OrderStatus.IN_PREPARATION, OrderStatus.CANCELLED, OrderStatus.COMPLETED, OrderStatus.DELIVERED],
+        OrderStatus.IN_PREPARATION: [OrderStatus.COMPLETED, OrderStatus.CANCELLED, OrderStatus.DELIVERED],
+        OrderStatus.COMPLETED: [OrderStatus.DELIVERED, OrderStatus.CANCELLED],
+        OrderStatus.DELIVERED: [],
         OrderStatus.CANCELLED: [],
     }
 
@@ -31,10 +32,34 @@ class OrderService:
         for line_item in req.items:
             menu_item = self.branch_menu_repo.get_by_id(line_item.branch_menu_item_id)
             if not menu_item:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Branch menu item {line_item.branch_menu_item_id} not found",
-                )
+                from app.modules.menu.master_menu.repository import MasterMenuRepository
+                from app.modules.menu.branch_menu.models import BranchMenuItem
+                
+                master_repo = MasterMenuRepository(self.repo.db)
+                master_item = master_repo.get_by_id(line_item.branch_menu_item_id)
+                
+                if not master_item:
+                    all_master = master_repo.get_all_master_items()
+                    for m in all_master:
+                        if m.id == line_item.branch_menu_item_id or m.name.lower() == str(line_item.branch_menu_item_id).lower():
+                            master_item = m
+                            break
+
+                if master_item:
+                    new_branch_item = BranchMenuItem(
+                        branch_id=req.branch_id,
+                        master_menu_item_id=master_item.id,
+                        name=master_item.name,
+                        category=master_item.category,
+                        price_override=master_item.base_price,
+                        is_available=True,
+                    )
+                    menu_item = self.branch_menu_repo.create(new_branch_item)
+                else:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail=f"Menu item {line_item.branch_menu_item_id} not found in catalog",
+                    )
 
             # Stock & Availability Constraint Check
             if not menu_item.is_available:
@@ -58,16 +83,38 @@ class OrderService:
                 )
             )
 
+        from app.modules.users.super_admin.models import User
+        existing_user = self.repo.db.query(User).filter(User.id == user.user_id).first()
+        valid_customer_id = existing_user.id if existing_user else None
+
         order = Order(
             branch_id=req.branch_id,
-            customer_id=user.user_id,
+            customer_id=valid_customer_id,
             order_type=req.order_type,
             status=OrderStatus.PENDING,
             total_amount=total_amount,
+            delivery_address=req.delivery_address,
+            delivery_notes=req.delivery_notes,
             items=order_items,
         )
 
         created = self.repo.create(order)
+
+        # Automatically create transaction receipt record in payments table
+        from app.modules.payments.models import Payment
+        from app.common.enums import PaymentMethod, PaymentStatus
+        from app.common.utils import generate_uuid
+
+        payment_record = Payment(
+            order_id=created.id,
+            amount=created.total_amount,
+            method=PaymentMethod.CASH,
+            status=PaymentStatus.COMPLETED,
+            transaction_reference=f"TXN-{generate_uuid()[:8].upper()}",
+        )
+        self.repo.db.add(payment_record)
+        self.repo.db.commit()
+
         return OrderResponse.model_validate(created)
 
     def update_order_status(self, order_id: str, new_status: OrderStatus) -> OrderResponse:

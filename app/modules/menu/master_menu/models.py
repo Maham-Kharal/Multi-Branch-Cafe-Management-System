@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 
 from app.common.utils import generate_uuid, utc_now
 from app.core.database import Base
+import app.modules.users.super_admin.models  # Ensures Tenant model is registered for relationship
 
 
 class MasterMenuItem(Base):

@@ -61,7 +61,11 @@ export const LoginPage: React.FC = () => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
+        {/* Hidden dummy inputs to prevent browser password manager autofill */}
+        <input type="text" className="hidden" tabIndex={-1} aria-hidden="true" />
+        <input type="password" className="hidden" tabIndex={-1} aria-hidden="true" />
+
         <div>
           <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wider">
             Email Address
@@ -71,6 +75,7 @@ export const LoginPage: React.FC = () => {
             <input
               type="email"
               required
+              autoComplete="off"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="owner@cafe.com"
@@ -88,6 +93,7 @@ export const LoginPage: React.FC = () => {
             <input
               type={showPassword ? 'text' : 'password'}
               required
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"

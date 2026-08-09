@@ -12,6 +12,8 @@ class CreateOrderRequest(BaseModel):
     branch_id: str
     items: List[OrderItemCreate]
     order_type: OrderType = OrderType.CUSTOMER_ONLINE
+    delivery_address: Optional[str] = None
+    delivery_notes: Optional[str] = None
 
 
 class UpdateOrderStatusRequest(BaseModel):
@@ -38,6 +40,8 @@ class OrderResponse(BaseModel):
     order_type: OrderType
     status: OrderStatus
     total_amount: float
+    delivery_address: Optional[str] = None
+    delivery_notes: Optional[str] = None
     items: List[OrderItemResponse]
 
     class Config:

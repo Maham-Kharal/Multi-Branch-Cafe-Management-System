@@ -3,6 +3,9 @@ from sqlalchemy.orm import relationship
 
 from app.common.utils import generate_uuid, utc_now
 from app.core.database import Base
+import app.modules.users.super_admin.models
+import app.modules.menu.branch_menu.models
+import app.modules.orders.customer_orders.models
 
 
 class Branch(Base):

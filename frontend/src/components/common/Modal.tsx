@@ -21,11 +21,9 @@ export const Modal: React.FC<ModalProps> = ({
       if (e.key === 'Escape') onClose();
     };
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
       window.addEventListener('keydown', handleKeyDown);
     }
     return () => {
-      document.body.style.overflow = 'unset';
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onClose]);
@@ -40,20 +38,20 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/40 backdrop-blur-xs animate-fade-in">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-stone-950/60 backdrop-blur-sm overflow-y-auto animate-fade-in">
       <div
-        className={`w-full bg-white rounded-2xl shadow-xl border border-stone-200 overflow-hidden ${maxWidths[maxWidth]}`}
+        className={`w-full bg-white rounded-3xl shadow-2xl border border-stone-200 overflow-hidden my-auto max-h-[85vh] flex flex-col ${maxWidths[maxWidth]}`}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100 bg-stone-50/50">
-          <h3 className="text-lg font-bold text-stone-800">{title}</h3>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100 bg-stone-50/80 shrink-0">
+          <h3 className="text-lg font-extrabold text-stone-900">{title}</h3>
           <button
             onClick={onClose}
-            className="p-1 text-stone-400 hover:text-stone-700 rounded-lg hover:bg-stone-200/60 transition-colors"
+            className="p-1.5 text-stone-400 hover:text-stone-800 rounded-xl hover:bg-stone-200/60 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="p-6 max-h-[80vh] overflow-y-auto">{children}</div>
+        <div className="p-6 overflow-y-auto flex-1 max-h-[65vh] text-stone-900">{children}</div>
       </div>
     </div>
   );

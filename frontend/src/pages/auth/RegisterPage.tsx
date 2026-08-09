@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
+import { branchService } from '../../services/branchService';
 import { UserRole } from '../../types/auth';
+import { Branch } from '../../types/branch';
 import { Button } from '../../components/common/Button';
-import { User, Mail, Lock, Building, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { User, Mail, Lock, Building, Store, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 export const RegisterPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -11,12 +13,31 @@ export const RegisterPage: React.FC = () => {
   const [fullName, setFullName] = useState('');
   const [role, setRole] = useState<UserRole>('CAFE_OWNER');
   const [tenantName, setTenantName] = useState('');
-  
+  const [branchId, setBranchId] = useState('');
+  const [availableBranches, setAvailableBranches] = useState<Branch[]>([]);
+
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    branchService
+      .getPublicBranches()
+      .then((branches) => {
+        if (Array.isArray(branches)) {
+          setAvailableBranches(branches);
+          if (branches.length > 0) {
+            setBranchId(branches[0].id);
+          }
+        }
+      })
+      .catch((err) => {
+        console.warn('Public branches load notice:', err);
+        setAvailableBranches([]);
+      });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +52,7 @@ export const RegisterPage: React.FC = () => {
         full_name: fullName,
         role,
         tenant_name: role === 'CAFE_OWNER' ? tenantName : undefined,
+        branch_id: role === 'BRANCH_STAFF' ? branchId : undefined,
       });
 
       setSuccess('Account registered successfully! Redirecting to login...');
@@ -93,7 +115,7 @@ export const RegisterPage: React.FC = () => {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="owner@cafe.com"
+              placeholder="user@cafe.com"
               className="w-full pl-10 pr-4 py-2 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:bg-white transition-all"
             />
           </div>
@@ -126,6 +148,7 @@ export const RegisterPage: React.FC = () => {
             className="w-full px-3.5 py-2 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:bg-white transition-all font-medium"
           >
             <option value="CAFE_OWNER">Café Owner (Creates Enterprise Tenant)</option>
+            <option value="BRANCH_STAFF">Branch Staff (Kitchen / Cashier / Barista)</option>
             <option value="CUSTOMER">Customer Account</option>
             <option value="SUPER_ADMIN">Platform Super Admin</option>
           </select>
@@ -146,6 +169,31 @@ export const RegisterPage: React.FC = () => {
                 placeholder="Brewly Franchise Group"
                 className="w-full pl-10 pr-4 py-2 bg-amber-50/50 border border-amber-300 rounded-xl text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all font-semibold"
               />
+            </div>
+          </div>
+        )}
+
+        {role === 'BRANCH_STAFF' && (
+          <div className="animate-fade-in">
+            <label className="block text-xs font-bold text-blue-800 mb-1 uppercase tracking-wider">
+              Assigned Physical Branch
+            </label>
+            <div className="relative">
+              <Store className="w-4 h-4 text-blue-600 absolute left-3.5 top-3" />
+              <select
+                value={branchId}
+                onChange={(e) => setBranchId(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-blue-50/50 border border-blue-300 rounded-xl text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-semibold"
+              >
+                {availableBranches.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name} ({b.city})
+                  </option>
+                ))}
+                {availableBranches.length === 0 && (
+                  <option value="">No branches created yet</option>
+                )}
+              </select>
             </div>
           </div>
         )}

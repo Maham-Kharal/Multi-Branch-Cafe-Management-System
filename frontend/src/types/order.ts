@@ -1,5 +1,5 @@
 export type OrderType = 'CUSTOMER_ONLINE' | 'INHOUSE_POS';
-export type OrderStatus = 'PENDING' | 'IN_PREPARATION' | 'COMPLETED' | 'CANCELLED';
+export type OrderStatus = 'PENDING' | 'IN_PREPARATION' | 'COMPLETED' | 'DELIVERED' | 'CANCELLED';
 
 export interface OrderItem {
   id: string;
@@ -18,6 +18,8 @@ export interface Order {
   order_type: OrderType;
   status: OrderStatus;
   total_amount: number;
+  delivery_address?: string | null;
+  delivery_notes?: string | null;
   created_at?: string;
   items: OrderItem[];
 }
@@ -31,6 +33,8 @@ export interface CreateOrderRequest {
   branch_id: string;
   items: OrderItemCreate[];
   order_type?: OrderType;
+  delivery_address?: string;
+  delivery_notes?: string;
 }
 
 export interface UpdateOrderStatusRequest {

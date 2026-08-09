@@ -4,6 +4,8 @@ from sqlalchemy.orm import relationship
 from app.common.enums import OrderStatus, OrderType
 from app.common.utils import generate_uuid, utc_now
 from app.core.database import Base
+import app.modules.payments.models  # Ensures Payment model is registered for relationship
+import app.modules.branches.models  # Ensures Branch model is registered for relationship
 
 
 class Order(Base):
@@ -21,6 +23,8 @@ class Order(Base):
     order_type = Column(SQLEnum(OrderType), nullable=False, default=OrderType.CUSTOMER_ONLINE, index=True)
     status = Column(SQLEnum(OrderStatus), nullable=False, default=OrderStatus.PENDING, index=True)
     total_amount = Column(Float, nullable=False, default=0.0)
+    delivery_address = Column(String, nullable=True)
+    delivery_notes = Column(String, nullable=True)
     
     created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)

@@ -7,6 +7,11 @@ export const branchService = {
     return response.data;
   },
 
+  async getPublicBranches(): Promise<Branch[]> {
+    const response = await api.get<Branch[]>('/branches/public');
+    return response.data || [];
+  },
+
   async getBranchById(id: string): Promise<Branch> {
     const response = await api.get<Branch>(`/branches/${id}`);
     return response.data;

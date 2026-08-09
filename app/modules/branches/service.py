@@ -36,6 +36,10 @@ class BranchService:
             branches = self.repo.get_branches_by_tenant(user.tenant_id)
         return [BranchResponse.model_validate(b) for b in branches]
 
+    def get_public_branches(self) -> List[BranchResponse]:
+        branches = self.repo.get_all_branches()
+        return [BranchResponse.model_validate(b) for b in branches if b.is_active]
+
     def get_branch_by_id(self, branch_id: str, user: TokenData) -> BranchResponse:
         branch = self.repo.get_branch_by_id(branch_id)
         if not branch:

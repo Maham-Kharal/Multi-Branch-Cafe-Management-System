@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship
 from app.common.enums import UserRole
 from app.common.utils import generate_uuid, utc_now
 from app.core.database import Base
+import app.modules.branches.models  # Ensures Branch model is registered for relationship
 
 
 class Tenant(Base):

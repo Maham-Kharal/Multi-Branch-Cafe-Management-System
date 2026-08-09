@@ -28,6 +28,16 @@ def create_new_branch(
     return service.create_branch(user=user, req=req)
 
 
+@router.get("/public", response_model=List[BranchResponse])
+def list_public_branches(
+    service: BranchService = Depends(get_branch_service),
+):
+    """
+    Public endpoint listing active physical branches for staff registration and customer browsing.
+    """
+    return service.get_public_branches()
+
+
 @router.get("", response_model=List[BranchResponse])
 def list_branches(
     user: TokenData = Depends(require_authenticated_user),

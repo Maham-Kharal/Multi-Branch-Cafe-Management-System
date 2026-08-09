@@ -13,6 +13,9 @@ class MasterMenuRepository:
     def get_by_tenant(self, tenant_id: str) -> List[MasterMenuItem]:
         return self.db.query(MasterMenuItem).filter(MasterMenuItem.tenant_id == tenant_id).all()
 
+    def get_all_master_items(self) -> List[MasterMenuItem]:
+        return self.db.query(MasterMenuItem).all()
+
     def create(self, item: MasterMenuItem) -> MasterMenuItem:
         self.db.add(item)
         self.db.commit()

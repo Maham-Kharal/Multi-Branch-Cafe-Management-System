@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 
 from app.common.utils import generate_uuid, utc_now
 from app.core.database import Base
+import app.modules.menu.master_menu.models  # Ensures MasterMenuItem is registered for relationship
 
 
 class BranchMenuItem(Base):

@@ -45,10 +45,10 @@ def get_my_order_history(
 def update_order_lifecycle_status(
     order_id: str,
     req: UpdateOrderStatusRequest,
-    current_staff: TokenData = Depends(require_branch_staff),
+    current_user: TokenData = Depends(require_authenticated_user),
     service: OrderService = Depends(get_order_service),
 ):
     """
-    Branch Staff endpoint to update order state machine status (PENDING -> IN_PREPARATION -> COMPLETED / CANCELLED).
+    Endpoint for Branch Staff, Owners, and Customers to update order lifecycle status.
     """
     return service.update_order_status(order_id=order_id, new_status=req.status)
