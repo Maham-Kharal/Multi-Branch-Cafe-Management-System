@@ -20,6 +20,23 @@ class AuthService:
                 detail="User with this email already exists",
             )
 
+        # Role Passcode Security Verification
+        if req.role == UserRole.SUPER_ADMIN and req.role_passcode != "SUPER_ADMIN":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Invalid security passkey for Super Admin",
+            )
+        if req.role == UserRole.CAFE_OWNER and req.role_passcode != "CAFE":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Invalid security passkey for cafe enterprise",
+            )
+        if req.role == UserRole.BRANCH_STAFF and req.role_passcode != "STAFF":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Invalid security passkey for Branch Staff",
+            )
+
         tenant_id = None
         # If registering a CAFE_OWNER, create a new Enterprise Tenant
         if req.role == UserRole.CAFE_OWNER:

@@ -32,4 +32,5 @@ export interface UserRegisterRequest {
   role: UserRole;
   tenant_name?: string;
   branch_id?: string;
+  role_passcode?: string;
 }

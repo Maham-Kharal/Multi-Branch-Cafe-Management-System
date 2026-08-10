@@ -278,7 +278,7 @@ export const CustomerMenuPage: React.FC = () => {
 
       {/* Active Recent Order Widget on Dashboard */}
       {recentActiveOrder && (
-        <div className="bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 p-5 rounded-3xl text-stone-950 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="bg-linear-to-r from-amber-500 via-amber-400 to-yellow-400 p-5 rounded-3xl text-stone-950 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Badge variant="amber">Active Order #{recentActiveOrder.id.substring(0, 8)}</Badge>
@@ -449,7 +449,7 @@ export const CustomerMenuPage: React.FC = () => {
                 {/* Delivery Address Field */}
                 {fulfillmentType === 'DELIVERY' && (
                   <div className="p-3 bg-amber-50 rounded-2xl border border-amber-200 space-y-2">
-                    <label className="block text-[11px] font-bold text-amber-950 uppercase tracking-wider flex items-center gap-1">
+                    <label className="flex items-center gap-1 text-[11px] font-bold text-amber-950 uppercase tracking-wider">
                       <MapPin className="w-3.5 h-3.5 text-amber-700" />
                       Delivery Street Address
                     </label>
@@ -509,7 +509,7 @@ export const CustomerMenuPage: React.FC = () => {
                       {o.delivery_address && o.delivery_address !== 'Dine-In / Pickup' ? (
                         <>
                           <Truck className="w-3.5 h-3.5 text-amber-700 shrink-0" />
-                          <span className="truncate max-w-[150px]">{o.delivery_address}</span>
+                          <span className="truncate max-w-36">{o.delivery_address}</span>
                         </>
                       ) : (
                         <>

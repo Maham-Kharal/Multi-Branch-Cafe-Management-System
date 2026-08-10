@@ -10,6 +10,7 @@ class UserRegisterRequest(BaseModel):
     role: UserRole = UserRole.CUSTOMER
     tenant_name: Optional[str] = Field(None, description="Required when creating a CAFE_OWNER to create their enterprise tenant")
     branch_id: Optional[str] = Field(None, description="Optional branch assignment for BRANCH_STAFF")
+    role_passcode: Optional[str] = Field(None, description="Security passkey required for privileged roles")
 
 
 class UserLoginRequest(BaseModel):

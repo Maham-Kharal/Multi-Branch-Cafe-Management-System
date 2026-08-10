@@ -14,6 +14,7 @@ export const RegisterPage: React.FC = () => {
   const [role, setRole] = useState<UserRole>('CAFE_OWNER');
   const [tenantName, setTenantName] = useState('');
   const [branchId, setBranchId] = useState('');
+  const [rolePasscode, setRolePasscode] = useState('');
   const [availableBranches, setAvailableBranches] = useState<Branch[]>([]);
 
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +54,7 @@ export const RegisterPage: React.FC = () => {
         role,
         tenant_name: role === 'CAFE_OWNER' ? tenantName : undefined,
         branch_id: role === 'BRANCH_STAFF' ? branchId : undefined,
+        role_passcode: role !== 'CUSTOMER' ? rolePasscode : undefined,
       });
 
       setSuccess('Account registered successfully! Redirecting to login...');
@@ -153,6 +155,25 @@ export const RegisterPage: React.FC = () => {
             <option value="SUPER_ADMIN">Platform Super Admin</option>
           </select>
         </div>
+
+        {role !== 'CUSTOMER' && (
+          <div className="animate-fade-in">
+            <label className="block text-xs font-bold text-rose-800 mb-1 uppercase tracking-wider">
+              Role Security Passkey
+            </label>
+            <div className="relative">
+              <Lock className="w-4 h-4 text-rose-600 absolute left-3.5 top-3" />
+              <input
+                type="password"
+                required
+                value={rolePasscode}
+                onChange={(e) => setRolePasscode(e.target.value)}
+                placeholder="Enter role security passkey"
+                className="w-full pl-10 pr-4 py-2 bg-rose-50/50 border border-rose-300 rounded-xl text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all font-mono font-bold"
+              />
+            </div>
+          </div>
+        )}
 
         {role === 'CAFE_OWNER' && (
           <div className="animate-fade-in">
