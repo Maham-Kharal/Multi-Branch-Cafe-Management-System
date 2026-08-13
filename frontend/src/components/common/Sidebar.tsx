@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Coffee,
   X,
+  Bot,
 } from 'lucide-react';
 
 interface SidebarProps {

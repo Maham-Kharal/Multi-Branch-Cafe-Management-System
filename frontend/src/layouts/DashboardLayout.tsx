@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Navbar } from '../components/common/Navbar';
 import { Sidebar } from '../components/common/Sidebar';
+import { FloatingAIChat } from '../features/chat/FloatingAIChat';
 
 export const DashboardLayout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] flex">
+    <div className="min-h-screen bg-[#FAF7F2] flex relative">
       {/* Sidebar Navigation */}
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
@@ -18,6 +19,9 @@ export const DashboardLayout: React.FC = () => {
           <Outlet />
         </main>
       </div>
+
+      {/* Floating Bottom-Right AI Voice Chat Widget */}
+      <FloatingAIChat />
     </div>
   );
 };

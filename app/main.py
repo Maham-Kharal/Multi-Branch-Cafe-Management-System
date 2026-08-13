@@ -11,6 +11,8 @@ import app.modules.menu.master_menu.models
 import app.modules.menu.branch_menu.models
 import app.modules.orders.customer_orders.models
 import app.modules.payments.models
+import app.modules.chat.chat_sessions.models
+import app.modules.chat.chat_messages.models
 
 # Include API Routers
 from app.modules.auth.router import router as auth_router
@@ -25,6 +27,18 @@ from app.modules.orders.customer_orders.router import router as customer_orders_
 from app.modules.orders.inhouse_orders.router import router as inhouse_orders_router
 from app.modules.payments.router import router as payments_router
 from app.modules.reports.router import router as reports_router
+
+# Standalone Chat Module Routers
+from app.modules.chat.chat_sessions.router import router as chat_sessions_router
+from app.modules.chat.chat_messages.router import router as chat_messages_router
+
+# AI Supervisor Orchestrator Router
+from app.modules.orchestrator.router import router as orchestrator_router
+from app.modules.orchestrator.tools.menu_tool.router import router as menu_tool_router
+from app.modules.orchestrator.tools.order_tool.router import router as order_tool_router
+from app.modules.orchestrator.tools.branch_tool.router import router as branch_tool_router
+from app.modules.orchestrator.tools.payment_tool.router import router as payment_tool_router
+
 
 # Auto-create all DB tables on application startup
 Base.metadata.create_all(bind=engine)
@@ -61,28 +75,22 @@ app.include_router(inhouse_orders_router, prefix=api_prefix)
 app.include_router(payments_router, prefix=api_prefix)
 app.include_router(reports_router, prefix=api_prefix)
 
-
-from fastapi.responses import FileResponse
-import os
-
-
-@app.get("/styles.css", include_in_schema=False)
-def serve_styles():
-    return FileResponse("styles.css", media_type="text/css")
-
-
-@app.get("/app.js", include_in_schema=False)
-def serve_js():
-    return FileResponse("app.js", media_type="application/javascript")
+# Standalone Chat & AI Orchestrator routers
+app.include_router(chat_sessions_router, prefix=api_prefix)
+app.include_router(chat_messages_router, prefix=api_prefix)
+app.include_router(orchestrator_router, prefix=api_prefix)
+app.include_router(menu_tool_router, prefix=api_prefix)
+app.include_router(order_tool_router, prefix=api_prefix)
+app.include_router(branch_tool_router, prefix=api_prefix)
+app.include_router(payment_tool_router, prefix=api_prefix)
 
 
-@app.get("/", tags=["Frontend Web App"])
-def serve_frontend():
-    if os.path.exists("index.html"):
-        return FileResponse("index.html")
+@app.get("/", tags=["Health"])
+def root_status():
     return {
         "status": "online",
         "system": settings.PROJECT_NAME,
         "version": settings.VERSION,
         "docs": "/docs",
     }
+

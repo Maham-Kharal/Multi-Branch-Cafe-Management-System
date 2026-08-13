@@ -15,6 +15,17 @@ class Settings(BaseSettings):
     # Database Settings (PostgreSQL or SQLite fallback)
     DATABASE_URL: str = "sqlite:///./cafe_management.db"
 
+    # AI & Voice Services Settings
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    ELEVENLABS_API_KEY: str = os.getenv("ELEVENLABS_API_KEY", "")
+    ELEVENLABS_VOICE_ID: str = "21m00Tcm4TlvDq8ikWAM"  # Standard Free Tier Voice (Rachel)
+    ELEVENLABS_MODEL_ID: str = "eleven_turbo_v2_5"      # High-speed Turbo v2.5 model (Free Tier compatible)
+    DEEPGRAM_API_KEY: str = os.getenv("DEEPGRAM_API_KEY", "")
+    DEEPGRAM_MODEL: str = "nova-3"
+
+
+
     model_config = SettingsConfigDict(
         env_file=".env",
         case_sensitive=True,

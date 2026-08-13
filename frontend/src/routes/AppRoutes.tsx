@@ -19,7 +19,9 @@ import { OwnerAnalyticsPage } from '../pages/cafe_owner/OwnerAnalyticsPage';
 import { StaffDashboard } from '../pages/staff/StaffDashboard';
 
 import { CustomerMenuPage } from '../pages/customer/CustomerMenuPage';
+import { AIChatWidget } from '../features/AIChatWidget';
 import { ProtectedRoute } from './ProtectedRoute';
+
 
 const RootRedirect: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -103,6 +105,8 @@ export const AppRoutes: React.FC = () => {
           <Route index element={<CustomerMenuPage />} />
           <Route path="orders" element={<CustomerMenuPage />} />
         </Route>
+
+
 
         {/* Root Fallback */}
         <Route path="/" element={<RootRedirect />} />
