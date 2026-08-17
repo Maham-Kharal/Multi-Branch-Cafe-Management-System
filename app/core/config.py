@@ -17,7 +17,7 @@ class Settings(BaseSettings):
 
     # AI & Voice Services Settings
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
-    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    GROQ_MODEL: str = "gpt-oss-120b"
     ELEVENLABS_API_KEY: str = os.getenv("ELEVENLABS_API_KEY", "")
     ELEVENLABS_VOICE_ID: str = "21m00Tcm4TlvDq8ikWAM"  # Standard Free Tier Voice (Rachel)
     ELEVENLABS_MODEL_ID: str = "eleven_turbo_v2_5"      # High-speed Turbo v2.5 model (Free Tier compatible)

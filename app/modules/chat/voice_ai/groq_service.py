@@ -53,10 +53,10 @@ class GroqService:
                 "tool_calls": []
             }
 
-        primary_model = model or getattr(settings, "GROQ_MODEL", "llama-3.3-70b-versatile")
+        primary_model = model or getattr(settings, "GROQ_MODEL", "gpt-oss-120b")
         
         # Sequence of free tier models to try if primary model hits rate limits
-        models_to_try = [primary_model, "llama-3.1-8b-instant", "mixtral-8x7b-32768"]
+        models_to_try = [primary_model, "qwen-3.6-27b", "llama-3.1-8b-instant", "mixtral-8x7b-32768"]
         models_to_try = list(dict.fromkeys(models_to_try))
 
         payload_messages = [{"role": "system", "content": SYSTEM_PROMPT}] + messages
